@@ -8,7 +8,7 @@ import shutil
 import aiofiles
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 
 from gui.api import APKLatorAPI
@@ -32,7 +32,7 @@ class KeycodePayload(BaseModel):
 
 @app.get("/")
 def read_root():
-    return JSONResponse(status_code=302, headers={"Location": "/app/"})
+    return RedirectResponse(url="/app/")
 
 
 @app.get("/api/stats")
