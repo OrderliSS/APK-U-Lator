@@ -20,16 +20,26 @@ const App = {
 
   // ── Bootstrap ──────────────────────────────────────────────
   async init() {
-    // Wait for pywebview bridge to be ready
-    if (window.pywebview) {
-      this.api = window.pywebview.api;
-      this._ready();
-    } else {
-      document.addEventListener('pywebviewready', () => {
-        this.api = window.pywebview.api;
-        this._ready();
-      });
-    }
+    this.api = {
+        get_stats: async () => (await fetch('/api/stats')).json(),
+        get_logs: async () => (await fetch('/api/logs')).json(),
+        vm_start: async () => (await fetch('/api/vm/start', {method: 'POST'})).json(),
+        vm_first_boot: async () => (await fetch('/api/vm/first-boot', {method: 'POST'})).json(),
+        vm_stop: async () => (await fetch('/api/vm/stop', {method: 'POST'})).json(),
+        vm_restart: async () => (await fetch('/api/vm/restart', {method: 'POST'})).json(),
+        adb_connect: async () => (await fetch('/api/adb/connect', {method: 'POST'})).json(),
+        adb_disconnect: async () => (await fetch('/api/adb/disconnect', {method: 'POST'})).json(),
+        get_installed_packages: async () => (await fetch('/api/adb/packages')).json(),
+        take_screenshot: async () => (await fetch('/api/screenshot', {method: 'POST'})).json(),
+        send_key_event: async (keycode) => (await fetch('/api/send-key', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({keycode})})).json(),
+        set_gps_location: async (lat, lng) => (await fetch('/api/gps', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({lat, lng})})).json(),
+        install_apk: async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            return (await fetch('/api/apk/install', {method: 'POST', body: formData})).json();
+        }
+    };
+    this._ready();
   },
 
   _ready() {
@@ -62,6 +72,9 @@ const App = {
     // Bottom bar
     safeOn('btn-install',    () => this.handleInstall());
     safeOn('btn-library',    () => this.handleLibrary());
+
+    const fileInput = document.getElementById('apk-upload');
+    if (fileInput) fileInput.addEventListener('change', (e) => this.queueInstallFiles(e));
 
     // Install modal
     safeOn('install-confirm', () => this.confirmInstall());
@@ -262,35 +275,38 @@ const App = {
   },
 
   async handleInstall() {
-    const paths = await this.api.browse_apk();
-    if (!paths || paths.length === 0) return;
-    this.state.apkQueue = paths;
+    document.getElementById('apk-upload')?.click();
+  },
+
+  queueInstallFiles(e) {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    this.state.apkQueue = files;
 
     // Populate the install modal queue list
     const list = document.getElementById('install-queue');
     if (list) {
       list.innerHTML = '';
-      paths.forEach(p => {
-        const name = p.split(/[\\/]/).pop();
+      files.forEach(f => {
         const item = document.createElement('div');
         item.className = 'flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5';
         item.innerHTML = `
           <span class="material-symbols-outlined text-cyan-400 text-lg">android</span>
-          <span class="text-sm text-slate-300 truncate flex-1">${name}</span>
+          <span class="text-sm text-slate-300 truncate flex-1">${f.name}</span>
           <span class="text-xs text-slate-500 font-mono">APK</span>`;
         list.appendChild(item);
       });
     }
     this.showModal('install-modal');
+    e.target.value = '';
   },
 
   async confirmInstall() {
     this.hideModal('install-modal');
-    for (const path of this.state.apkQueue) {
-      const name = path.split(/[\\/]/).pop();
-      this._addLog(`Installing ${name}…`);
-      const r = await this.api.install_apk(path);
-      this._addLog(r.ok ? `✓ ${name} installed.` : `✗ ${name}: ${r.message}`);
+    for (const file of this.state.apkQueue) {
+      this._addLog(`Uploading & Installing ${file.name}…`);
+      const r = await this.api.install_apk(file);
+      this._addLog(r.ok ? `✓ ${file.name} installed.` : `✗ ${file.name}: ${r.message}`);
     }
     this.state.apkQueue = [];
   },

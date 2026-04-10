@@ -1,9 +1,9 @@
-"""APK-Lator Python API Bridge.
+"""APK-Lator Python API.
 
-All public methods are automatically exposed to JavaScript via pywebview.js_api
-and callable as: await window.pywebview.api.METHOD_NAME(...)
+Core backend logic for APK U Lator.
+Exposes methods used by the FastAPI web server.
 
-All return values must be JSON-serialisable (dict, list, str, int, bool).
+All return values are JSON-serialisable (dict, list, str, int, bool).
 """
 import os
 import sys
@@ -25,7 +25,7 @@ from core.platform_utils import (
 
 
 class APKLatorAPI:
-    """Python API class whose methods are exposed to JavaScript via pywebview."""
+    """Python API class acting as the backend engine."""
 
     def __init__(self):
         self._log_queue: queue.Queue = queue.Queue(maxsize=1000)
@@ -217,23 +217,6 @@ class APKLatorAPI:
     # ═══════════════════════════════════════════════
     #  APK Management
     # ═══════════════════════════════════════════════
-
-    def browse_apk(self) -> list:
-        """Open a native file dialog to select one or more APK files.
-
-        Returns a list of absolute file paths (may be empty if cancelled).
-        """
-        try:
-            import webview  # pywebview module
-            files = webview.windows[0].create_file_dialog(
-                webview.OPEN_DIALOG,
-                allow_multiple=True,
-                file_types=("Android Package (*.apk)", "All Files (*.*)")
-            )
-            return list(files) if files else []
-        except Exception as exc:
-            self._emit(f"[Browse] Error: {exc}")
-            return []
 
     def install_apk(self, path: str) -> dict:
         """Install a single APK file via ADB.
