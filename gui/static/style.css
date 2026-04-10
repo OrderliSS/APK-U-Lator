@@ -1,0 +1,118 @@
+/* APK U Lator — Supplementary Styles
+   Tailwind handles the bulk; this file covers things it can't:
+   custom scrollbars, animations, and pywebview-specific resets.
+*/
+
+/* ── Drag region so the user can move the frameless window ── */
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-app-region: no-drag;
+}
+
+/* ── Scrollbar skin ── */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(109, 221, 255, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(109, 221, 255, 0.4);
+}
+
+/* ── Animated log cursor ── */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+.log-cursor {
+    animation: blink 1s step-end infinite;
+    color: #6dddff;
+}
+
+/* ── Viewport wallpaper ken-burns ── */
+@keyframes kenburns {
+    0%   { transform: scale(1)    translateX(0);    }
+    50%  { transform: scale(1.04) translateX(-1%);  }
+    100% { transform: scale(1)    translateX(0);    }
+}
+#viewport-wallpaper {
+    animation: kenburns 30s ease-in-out infinite;
+}
+
+/* ── VM Running pulse ring ── */
+@keyframes ping-slow {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    100% { transform: scale(1.8); opacity: 0;   }
+}
+.ping-slow {
+    animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* ── Icon hover lift ── */
+.app-icon {
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.app-icon:hover {
+    transform: translateY(-4px) scale(1.08);
+    filter: brightness(1.2);
+}
+
+/* ── Sidebar active indicator bar ── */
+.nav-btn-active {
+    border-left: 2px solid #6dddff;
+    padding-left: calc(1rem - 2px);
+    background: rgba(109, 221, 255, 0.05);
+    color: #6dddff;
+}
+.nav-btn {
+    border-left: 2px solid transparent;
+    padding-left: calc(1rem - 2px);
+    color: #64748b;
+    transition: background 0.15s, color 0.15s;
+}
+.nav-btn:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+}
+
+/* ── Modal backdrop ── */
+.modal-backdrop {
+    backdrop-filter: blur(6px);
+}
+
+/* ── Glass panel ── */
+.glass-panel {
+    background: rgba(22, 26, 33, 0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── Progress bar glow ── */
+.bar-glow {
+    box-shadow: 0 0 8px rgba(109, 221, 255, 0.45);
+}
+
+/* ── Dock icon bounce on click ── */
+@keyframes dock-bounce {
+    0%, 100% { transform: translateY(0); }
+    40%       { transform: translateY(-10px); }
+    70%       { transform: translateY(-4px); }
+}
+.dock-bounce {
+    animation: dock-bounce 0.4s ease;
+}
+
+/* ── Tailwind layer fix for material icons in flex  ── */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+}
